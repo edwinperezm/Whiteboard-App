@@ -1,0 +1,91 @@
+:root {
+  --primary-color: #2D2D2D;
+  --secondary-color: #F5F5F5;
+  --accent-color: #0066FF;
+}
+
+body {
+  margin: 0;
+  padding: 0;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen;
+  background-color: var(--secondary-color);
+}
+
+.workspace {
+  width: 100vw;
+  height: 100vh;
+  position: relative;
+  overflow: hidden;
+}
+  .toolbar {
+    position: fixed;
+    top: 50%;
+    left: 20px;
+    transform: translateY(-50%);
+    background: white;
+    border-radius: 12px;
+    padding: 12px;
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+    z-index: 100;
+  }
+.tool-button {
+  padding: 8px;
+  border-radius: 6px;
+  border: none;
+  background: transparent;
+  cursor: pointer;
+  transition: background 0.2s;
+}
+
+.tool-button:hover {
+  background: var(--secondary-color);
+}
+  .canvas {
+    width: 100%;
+    height: 100%;
+    position: relative;
+    background-size: 40px 40px;
+    background-image: 
+      linear-gradient(to right, #e5e5e5 1px, transparent 1px),
+      linear-gradient(to bottom, #e5e5e5 1px, transparent 1px);
+  }
+
+  /* Add zoom controls */
+  .zoom-controls {
+    position: fixed;
+    right: 20px;
+    bottom: 20px;
+    background: white;
+    border-radius: 8px;
+    padding: 8px;
+    box-shadow: 0 2px 6px rgba(0,0,0,0.1);
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+  }
+
+  /* Add minimap */
+  .minimap {
+    position: fixed;
+    right: 20px;
+    top: 20px;
+    width: 200px;
+    height: 150px;
+    background: white;
+    border-radius: 8px;
+    box-shadow: 0 2px 6px rgba(0,0,0,0.1);
+    overflow: hidden;
+  }
+.element {
+  position: absolute;
+  background: white;
+  border-radius: 4px;
+  padding: 16px;
+  min-width: 100px;
+  min-height: 100px;
+  box-shadow: 0 2px 6px rgba(0,0,0,0.1);
+  cursor: move;
+}
