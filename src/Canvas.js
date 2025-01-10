@@ -1,64 +1,35 @@
-import React, { useState, useEffect, useRef, useMemo, useCallback } from "react";
-import { Stage, Layer, Rect, Circle, Line, Text, Transformer } from "react-konva";
+import React, { useState, useEffect, useRef, useCallback } from "react";
+import { Stage, Layer, Line, Rect, Text, Transformer } from "react-konva";
 import { socket } from "./api";
 
-// Add missing utility functions
+const SHAPE_TYPES = {
+  SELECT: "select",
+  RECTANGLE: "rectangle",
+  CIRCLE: "circle",
+  LINE: "line",
+  PENCIL: "pencil",
+  TEXT: "text",
+};
+
 const getRandomColor = () => {
   const colors = [
-    '#FF6B6B', '#4ECDC4', '#45B7D1', 
-    '#FDCB6E', '#6C5CE7', '#A8E6CF', '#FF8ED4'
+    "#FF6B6B",
+    "#4ECDC4",
+    "#45B7D1",
+    "#FDCB6E",
+    "#6C5CE7",
+    "#A8E6CF",
+    "#FF8ED4",
   ];
   return colors[Math.floor(Math.random() * colors.length)];
 };
 
-// Placeholder functions for advanced drawing
-const isCircle = (points, tolerance) => {
-  // Implement circle detection logic
-  return false;
-};
-
-const isRectangle = (points, tolerance) => {
-  // Implement rectangle detection logic
-  return false;
-};
-
-const createPerfectCircle = (points) => {
-  // Implement perfect circle creation
-  return points;
-};
-
-const createPerfectRectangle = (points) => {
-  // Implement perfect rectangle creation
-  return points;
-};
-
-const APPLE_COLORS = [
-  '#FF3B30', // Red
-  '#FF9500', // Orange
-  '#FFCC00', // Yellow
-  '#34C759', // Green
-  '#5856D6', // Indigo
-  '#AF52DE', // Purple
-  '#5E5E5E'  // Gray
-];
-
-const SHAPE_TYPES = {
-  SELECT: 'select',
-  RECTANGLE: 'rectangle',
-  CIRCLE: 'circle',
-  LINE: 'line',
-  PENCIL: 'pencil',
-  TEXT: 'text'
-};
-
-const RENDER_BATCH_SIZE = 50; // Limit number of elements rendered at once
-
-const ShapeComponent = ({ 
-  shapeProps, 
-  isSelected, 
-  onSelect, 
+const ShapeComponent = ({
+  shapeProps,
+  isSelected,
+  onSelect,
   onChange,
-  onTextChange 
+  onTextChange,
 }) => {
   const shapeRef = useRef();
   const trRef = useRef();
@@ -80,18 +51,18 @@ const ShapeComponent = ({
         onChange({
           ...shapeProps,
           x: e.target.x(),
-          y: e.target.y()
+          y: e.target.y(),
         });
-      }
+      },
     };
 
-    switch(shapeProps.type) {
+    switch (shapeProps.type) {
       case SHAPE_TYPES.RECTANGLE:
         return (
-          <Rect 
+          <Rect
             {...baseProps}
             cornerRadius={10}
-            stroke={shapeProps.stroke || 'black'}
+            stroke={shapeProps.stroke || "black"}
             strokeWidth={shapeProps.strokeWidth || 2}
             onTransformEnd={() => {
               const node = shapeRef.current;
@@ -101,7 +72,7 @@ const ShapeComponent = ({
                 y: node.y(),
                 width: node.width() * node.scaleX(),
                 height: node.height() * node.scaleY(),
-                rotation: node.rotation()
+                rotation: node.rotation(),
               });
             }}
           />
@@ -110,13 +81,89 @@ const ShapeComponent = ({
         return (
           <Text
             {...baseProps}
+            text={shapeProps.text || "Double click to edit"}
+            fontSize={shapeProps.fontSize || 16}
+            fill={shapeProps.fill || "black"}
             editable={isSelected}
-            onDblClick={() => {
-              // Enable text editing
-              shapeRef.current.textNode.focus();
-            }}
-            onTextChange={(e) => {
-              onTextChange(shapeProps.id, e.target.value());
+            onDblClick={(e) => {
+              const textNode = e.target;
+              if (!textNode) return;
+
+              const existingTextarea =
+                document.querySelector(".konva-text-editor");
+              if (existingTextarea) {
+                document.body.removeChild(existingTextarea);
+              }
+
+              const textPosition = textNode.getAbsolutePosition();
+              const stageBox = textNode
+                .getStage()
+                .container()
+                .getBoundingClientRect();
+
+              const textarea = document.createElement("textarea");
+              textarea.classList.add("konva-text-editor");
+              document.body.appendChild(textarea);
+
+              textarea.value = textNode.text();
+              textarea.style.position = "absolute";
+              textarea.style.top = `${stageBox.top + textPosition.y}px`;
+              textarea.style.left = `${stageBox.left + textPosition.x}px`;
+              textarea.style.width = `${textNode.width() - textNode.padding() * 2}px`;
+              textarea.style.height = `${textNode.height() - textNode.padding() * 2}px`;
+              textarea.style.fontSize = `${textNode.fontSize()}px`;
+              textarea.style.border = "1px solid blue";
+              textarea.style.padding = "0px";
+              textarea.style.margin = "0px";
+              textarea.style.overflow = "hidden";
+              textarea.style.background = "white";
+              textarea.style.outline = "none";
+              textarea.style.resize = "none";
+              textarea.style.lineHeight = textNode.lineHeight();
+              textarea.style.fontFamily = textNode.fontFamily();
+              textarea.style.transformOrigin = "left top";
+              textarea.style.textAlign = textNode.align();
+              textarea.style.color = textNode.fill();
+
+              textarea.focus();
+
+              let removed = false;
+
+              const removeTextarea = () => {
+                if (removed) return;
+                removed = true;
+                document.body.removeChild(textarea);
+                window.removeEventListener("click", handleOutsideClick);
+              };
+
+              const handleOutsideClick = (e) => {
+                if (e.target !== textarea) {
+                  textNode.text(textarea.value);
+                  removeTextarea();
+                  onTextChange(shapeProps.id, textarea.value);
+                }
+              };
+
+              textarea.addEventListener("keydown", (e) => {
+                if (e.key === "Enter" && !e.shiftKey) {
+                  textNode.text(textarea.value);
+                  removeTextarea();
+                  onTextChange(shapeProps.id, textarea.value);
+                }
+                if (e.key === "Escape") {
+                  removeTextarea();
+                }
+              });
+
+              textarea.addEventListener("blur", () => {
+                textNode.text(textarea.value);
+                removeTextarea();
+                onTextChange(shapeProps.id, textarea.value);
+              });
+
+              setTimeout(() => {
+                window.addEventListener("click", handleOutsideClick);
+              });
             }}
           />
         );
@@ -125,7 +172,7 @@ const ShapeComponent = ({
           <Line
             {...baseProps}
             points={shapeProps.points}
-            stroke={shapeProps.stroke || 'black'}
+            stroke={shapeProps.stroke || "black"}
             strokeWidth={shapeProps.strokeWidth || 5}
             tension={0.5}
             lineCap="round"
@@ -157,40 +204,33 @@ const ShapeComponent = ({
 
 const Canvas = React.memo(({ selectedTool, zoomLevel = 1 }) => {
   const [elements, setElements] = useState([]);
-  const [visibleElements, setVisibleElements] = useState([]);
   const [selectedId, selectShape] = useState(null);
   const [drawing, setDrawing] = useState(false);
   const [currentLine, setCurrentLine] = useState([]);
   const stageRef = useRef(null);
 
-  // Error handling wrapper
-  const safeSocketEmit = (event, data) => {
-    try {
-      socket.emit(event, data);
-    } catch (error) {
-      console.error(`Socket emission error for ${event}:`, error);
-    }
-  };
-
-  // Virtualization with error handling
   useEffect(() => {
-    try {
-      const startIndex = Math.max(0, elements.length - 50);
-      setVisibleElements(elements.slice(startIndex));
-    } catch (error) {
-      console.error('Virtualization error:', error);
-    }
-  }, [elements]);
+    const handleResize = () => {
+      if (stageRef.current) {
+        const stage = stageRef.current;
+        stage.width(window.innerWidth);
+        stage.height(window.innerHeight);
+      }
+    };
+
+    window.addEventListener("resize", handleResize);
+    return () => window.removeEventListener("resize", handleResize);
+  }, []);
 
   const handleElementCreate = (e) => {
     try {
-      if (selectedTool === 'select') return;
+      if (selectedTool === SHAPE_TYPES.SELECT) return;
 
       const stage = e.target.getStage();
       const point = stage.getPointerPosition();
 
       if (!point) {
-        console.warn('Invalid pointer position');
+        console.warn("Invalid pointer position");
         return;
       }
 
@@ -199,23 +239,30 @@ const Canvas = React.memo(({ selectedTool, zoomLevel = 1 }) => {
         type: selectedTool,
         x: point.x,
         y: point.y,
-        width: 150,
-        height: 100,
+        width: selectedTool === SHAPE_TYPES.TEXT ? 200 : 150,
+        height: selectedTool === SHAPE_TYPES.TEXT ? 50 : 100,
         fill: getRandomColor(),
-        stroke: 'black',
+        stroke: "black",
         strokeWidth: 2,
-        text: selectedTool === 'text' ? 'Edit text' : '',
-        points: selectedTool === 'pencil' ? [point.x, point.y] : []
+        text: selectedTool === SHAPE_TYPES.TEXT ? "Double click to edit" : "",
+        fontSize: 16,
+        draggable: true,
+        rotation: 0,
       };
-      
-      safeSocketEmit('draw', newElement);
-      setElements(prev => [...prev, newElement]);
+
+      socket.emit("draw", newElement);
+      setElements((prev) => [...prev, newElement]);
     } catch (error) {
-      console.error('Element creation error:', error);
+      console.error("Element creation error:", error);
     }
   };
 
   const handleMouseDown = (e) => {
+    const clickedOnEmpty = e.target === e.target.getStage();
+    if (clickedOnEmpty) {
+      selectShape(null);
+    }
+
     if (selectedTool === SHAPE_TYPES.PENCIL) {
       setDrawing(true);
       const point = e.target.getStage().getPointerPosition();
@@ -224,64 +271,78 @@ const Canvas = React.memo(({ selectedTool, zoomLevel = 1 }) => {
   };
 
   const handleMouseMove = (e) => {
-    if (drawing && selectedTool === SHAPE_TYPES.PENCIL) {
+    if (!drawing) return;
+
+    if (selectedTool === SHAPE_TYPES.PENCIL) {
       const stage = e.target.getStage();
       const point = stage.getPointerPosition();
-      setCurrentLine(prev => [...prev, point.x, point.y]);
+      setCurrentLine((prev) => [...prev, point.x, point.y]);
     }
   };
 
   const handleMouseUp = () => {
-    if (drawing && selectedTool === SHAPE_TYPES.PENCIL) {
+    if (!drawing) return;
+
+    if (selectedTool === SHAPE_TYPES.PENCIL && currentLine.length > 2) {
       const newPencilElement = {
         id: `${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,
         type: SHAPE_TYPES.PENCIL,
         points: currentLine,
-        stroke: 'black',
-        strokeWidth: 5
+        stroke: "black",
+        strokeWidth: 5,
       };
 
-      safeSocketEmit('draw', newPencilElement);
-      setElements(prev => [...prev, newPencilElement]);
-      setDrawing(false);
-      setCurrentLine([]);
+      socket.emit("draw", newPencilElement);
+      setElements((prev) => [...prev, newPencilElement]);
     }
+
+    setDrawing(false);
+    setCurrentLine([]);
   };
 
-  const handleKeyDown = useCallback((e) => {
-    if (!selectedId) return;
+  const handleKeyDown = useCallback(
+    (e) => {
+      if (!selectedId) return;
 
-    switch(e.key) {
-      case 'Backspace':
-      case 'Delete':
-        setElements(prev => prev.filter(elem => elem.id !== selectedId));
-        selectShape(null);
-        break;
-      case 'Escape':
-        selectShape(null);
-        break;
-      default:
-        break;
-    }
-  }, [selectedId]);
+      switch (e.key) {
+        case "Backspace":
+        case "Delete":
+          setElements((prev) => prev.filter((elem) => elem.id !== selectedId));
+          socket.emit("element-delete", selectedId);
+          selectShape(null);
+          break;
+        case "Escape":
+          selectShape(null);
+          break;
+        default:
+          break;
+      }
+    },
+    [selectedId],
+  );
 
   useEffect(() => {
-    document.addEventListener('keydown', handleKeyDown);
-    
-    socket.on('draw', (newElement) => {
-      setElements(prev => [...prev, newElement]);
+    document.addEventListener("keydown", handleKeyDown);
+
+    socket.on("draw", (newElement) => {
+      setElements((prev) => [...prev, newElement]);
+    });
+
+    socket.on("element-delete", (elementId) => {
+      setElements((prev) => prev.filter((elem) => elem.id !== elementId));
     });
 
     return () => {
-      document.removeEventListener('keydown', handleKeyDown);
-      socket.off('draw');
+      document.removeEventListener("keydown", handleKeyDown);
+      socket.off("draw");
+      socket.off("element-delete");
     };
   }, [handleKeyDown]);
 
   return (
-    <Stage 
+    <Stage
       ref={stageRef}
-      width={window.innerWidth} 
+      width={window.innerWidth}
       height={window.innerHeight}
       scaleX={zoomLevel}
       scaleY={zoomLevel}
@@ -290,9 +351,23 @@ const Canvas = React.memo(({ selectedTool, zoomLevel = 1 }) => {
       onMouseDown={handleMouseDown}
       onMouseMove={handleMouseMove}
       onMouseUp={handleMouseUp}
+      onTouchStart={handleMouseDown}
+      onTouchMove={handleMouseMove}
+      onTouchEnd={handleMouseUp}
     >
       <Layer>
-        {visibleElements.map((elem) => (
+        {drawing && currentLine.length >= 2 && (
+          <Line
+            points={currentLine}
+            stroke="black"
+            strokeWidth={5}
+            tension={0.5}
+            lineCap="round"
+            lineJoin="round"
+          />
+        )}
+
+        {elements.map((elem) => (
           <ShapeComponent
             key={elem.id}
             shapeProps={elem}
@@ -300,75 +375,27 @@ const Canvas = React.memo(({ selectedTool, zoomLevel = 1 }) => {
             onSelect={() => selectShape(elem.id)}
             onChange={(newAttrs) => {
               try {
-                const updatedElements = elements.map((elem) => 
-                  elem.id === newAttrs.id ? newAttrs : elem
+                const updatedElements = elements.map((el) =>
+                  el.id === newAttrs.id ? newAttrs : el,
                 );
                 setElements(updatedElements);
-                safeSocketEmit('element-update', newAttrs);
+                socket.emit("element-update", newAttrs);
               } catch (error) {
-                console.error('Element update error:', error);
+                console.error("Element update error:", error);
               }
             }}
             onTextChange={(id, newText) => {
-              const updatedElements = elements.map((elem) => 
-                elem.id === id ? { ...elem, text: newText } : elem
+              const updatedElements = elements.map((elem) =>
+                elem.id === id ? { ...elem, text: newText } : elem,
               );
               setElements(updatedElements);
-              safeSocketEmit('element-update', { id, text: newText });
+              socket.emit("element-update", { id, text: newText });
             }}
           />
         ))}
       </Layer>
     </Stage>
   );
-});// Utility debounce function
-function debounce(func, wait) {
-  let timeout;
-  return function executedFunction(...args) {
-    const later = () => {
-      clearTimeout(timeout);
-      func(...args);
-    };
-    clearTimeout(timeout);
-    timeout = setTimeout(later, wait);
-  };
-}
+});
 
 export default Canvas;
-// Add advanced drawing tool capabilities
-const ADVANCED_TOOLS = {
-  FREEHAND: 'freehand',
-  BEZIER_CURVE: 'bezierCurve',
-  GEOMETRIC_SHAPES: 'geometricShapes'
-};
-
-// Implement advanced drawing logic
-const handleAdvancedDrawing = (tool, points) => {
-  switch(tool) {
-    case ADVANCED_TOOLS.FREEHAND:
-      return { type: 'freehand', points };
-    case ADVANCED_TOOLS.BEZIER_CURVE:
-      return { type: 'bezierCurve', points };
-    case ADVANCED_TOOLS.GEOMETRIC_SHAPES:
-      return detectAndSnapGeometricShape(points);
-    default:
-      return { type: 'line', points };
-  }
-};
-// Shape detection and snapping
-const detectAndSnapGeometricShape = (points) => {
-  const tolerance = 0.1; // Tolerance for shape detection
-  
-  // Detect circle
-  if (isCircle(points, tolerance)) {
-    return createPerfectCircle(points);
-  }
-  
-  // Detect rectangle
-  if (isRectangle(points, tolerance)) {
-    return createPerfectRectangle(points);
-  }
-  
-  // Default to original points
-  return { type: 'line', points };
-};

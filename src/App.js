@@ -1,61 +1,37 @@
-import React, { useState, useEffect } from 'react';
-import Canvas from './Canvas';
-import LeftToolbar from './components/LeftToolbar';
-import TopNavBar from './components/TopNavBar';
-import RightPanel from './components/RightPanel';
-import './App.css';
+import React, { useState } from "react";
+import Canvas from "./Canvas";
+import LeftToolbar from "./components/LeftToolbar";
+import TopNavBar from "./components/TopNavBar";
+import RightPanel from "./components/RightPanel";
+import "./App.css";
 
 function App() {
-  const [selectedTool, setSelectedTool] = useState('select');
+  const [selectedTool, setSelectedTool] = useState("select");
   const [zoomLevel, setZoomLevel] = useState(1);
 
-  useEffect(() => {
-    const handleKeyboardShortcuts = (e) => {
-      if (e.ctrlKey || e.metaKey) {
-        switch(e.key) {
-          case 'z':
-            e.shiftKey ? handleRedo() : handleUndo();
-            break;
-          case '+':
-            setZoomLevel(prev => Math.min(prev * 1.1, 3));
-            break;
-          case '-':
-            setZoomLevel(prev => Math.max(prev / 1.1, 0.5));
-            break;
-          case '0':
-            setZoomLevel(1);
-            break;
-          case 'a':
-            // Select all elements
-            break;
-        }
-      }
-    };
+  // Constants
+  const MIN_ZOOM = 0.5;
+  const MAX_ZOOM = 3;
 
-    window.addEventListener('keydown', handleKeyboardShortcuts);
-    return () => window.removeEventListener('keydown', handleKeyboardShortcuts);
-  }, []);
-
-  const handleUndo = () => {
-    // Implement undo logic
-  };
-
-  const handleRedo = () => {
-    // Implement redo logic
+  // Handle zoom changes
+  const handleZoomChange = (newZoom) => {
+    const zoomValue = Math.min(Math.max(newZoom, MIN_ZOOM), MAX_ZOOM);
+    setZoomLevel(Number(zoomValue.toFixed(2)));
   };
 
   return (
     <div className="app-container">
       <TopNavBar />
       <div className="workspace">
-        <LeftToolbar 
-          selectedTool={selectedTool} 
-          onSelectTool={setSelectedTool} 
+        <LeftToolbar
+          selectedTool={selectedTool}
+          onSelectTool={setSelectedTool}
         />
-        <Canvas 
-          selectedTool={selectedTool} 
-          zoomLevel={zoomLevel}
-        />
+
+        <div className="canvas-container">
+          <Canvas selectedTool={selectedTool} zoomLevel={zoomLevel} />
+        </div>
+
         <RightPanel />
       </div>
     </div>
