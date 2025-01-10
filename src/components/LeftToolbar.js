@@ -5,27 +5,27 @@ const LeftToolbar = ({ selectedTool, onSelectTool }) => {
     {
       name: "select",
       icon: "👆",
-      tooltip: "Select and move",
-    },
-    {
-      name: "rectangle",
-      icon: "⬜",
-      tooltip: "Rectangle",
-    },
-    {
-      name: "circle",
-      icon: "⭕",
-      tooltip: "Circle",
-    },
-    {
-      name: "text",
-      icon: "T",
-      tooltip: "Text",
+      tooltip: "Select (V)",
     },
     {
       name: "pencil",
       icon: "✏️",
-      tooltip: "Draw",
+      tooltip: "Pencil (P)",
+    },
+    {
+      name: "rectangle",
+      icon: "⬜",
+      tooltip: "Rectangle (R)",
+    },
+    {
+      name: "text",
+      icon: "T",
+      tooltip: "Text (T)",
+    },
+    {
+      name: "eraser",
+      icon: "🧽",
+      tooltip: "Eraser (E)",
     },
   ];
 

@@ -6,18 +6,7 @@ import RightPanel from "./components/RightPanel";
 import "./App.css";
 
 function App() {
-  const [selectedTool, setSelectedTool] = useState("select");
-  const [zoomLevel, setZoomLevel] = useState(1);
-
-  // Constants
-  const MIN_ZOOM = 0.5;
-  const MAX_ZOOM = 3;
-
-  // Handle zoom changes
-  const handleZoomChange = (newZoom) => {
-    const zoomValue = Math.min(Math.max(newZoom, MIN_ZOOM), MAX_ZOOM);
-    setZoomLevel(Number(zoomValue.toFixed(2)));
-  };
+  const [selectedTool, setSelectedTool] = useState("pencil");
 
   return (
     <div className="app-container">
@@ -27,11 +16,9 @@ function App() {
           selectedTool={selectedTool}
           onSelectTool={setSelectedTool}
         />
-
         <div className="canvas-container">
-          <Canvas selectedTool={selectedTool} zoomLevel={zoomLevel} />
+          <Canvas selectedTool={selectedTool} />
         </div>
-
         <RightPanel />
       </div>
     </div>
