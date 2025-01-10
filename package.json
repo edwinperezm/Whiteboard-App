@@ -9,6 +9,7 @@
     "@mui/material": "^6.2.0",
     "cra-template": "1.2.0",
     "konva": "^9.3.16",
+    "openai": "^4.77.0",
     "react": "^19.0.0",
     "react-dom": "^19.0.0",
     "react-konva": "^19.0.1",
