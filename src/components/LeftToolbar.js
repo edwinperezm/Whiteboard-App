@@ -1,42 +1,24 @@
 import React from "react";
+import "../styles/components.css";
 
 const LeftToolbar = ({ selectedTool, onSelectTool }) => {
   const tools = [
-    {
-      name: "select",
-      icon: "👆",
-      tooltip: "Select (V)",
-    },
-    {
-      name: "pencil",
-      icon: "✏️",
-      tooltip: "Pencil (P)",
-    },
-    {
-      name: "rectangle",
-      icon: "⬜",
-      tooltip: "Rectangle (R)",
-    },
-    {
-      name: "text",
-      icon: "T",
-      tooltip: "Text (T)",
-    },
-    {
-      name: "eraser",
-      icon: "🧽",
-      tooltip: "Eraser (E)",
-    },
+    { id: "select", icon: "👆", label: "Select" },
+    { id: "pencil", icon: "✏️", label: "Pencil" },
+    { id: "rectangle", icon: "⬜", label: "Rectangle" },
+    { id: "circle", icon: "⭕", label: "Circle" },
+    { id: "text", icon: "T", label: "Text" },
+    { id: "eraser", icon: "🧽", label: "Eraser" },
   ];
 
   return (
     <div className="left-toolbar">
       {tools.map((tool) => (
         <button
-          key={tool.name}
-          className={`tool-button ${selectedTool === tool.name ? "active" : ""}`}
-          onClick={() => onSelectTool(tool.name)}
-          title={tool.tooltip}
+          key={tool.id}
+          className={`tool-button ${selectedTool === tool.id ? "active" : ""}`}
+          onClick={() => onSelectTool(tool.id)}
+          title={tool.label}
         >
           {tool.icon}
         </button>

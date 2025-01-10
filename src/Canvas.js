@@ -1,117 +1,92 @@
 import React, { useState, useEffect, useRef } from "react";
-import { Stage, Layer, Line, Rect, Text, Transformer } from "react-konva";
-import { socket } from "./api";
+import {
+  Stage,
+  Layer,
+  Line,
+  Rect,
+  Circle,
+  Text,
+  Transformer,
+} from "react-konva";
 
-const Canvas = ({ selectedTool }) => {
+const Canvas = ({
+  selectedTool,
+  zoomLevel,
+  strokeColor,
+  fillColor,
+  strokeWidth,
+  onElementSelect,
+}) => {
   const [isDrawing, setIsDrawing] = useState(false);
   const [elements, setElements] = useState([]);
   const [selectedId, setSelectedId] = useState(null);
-  const [startPoint, setStartPoint] = useState(null);
   const stageRef = useRef(null);
-  const trRef = useRef(null);
+  const layerRef = useRef(null);
 
-  // Properties state
-  const [strokeColor, setStrokeColor] = useState("#000000");
-  const [fillColor, setFillColor] = useState("#ffffff");
-  const [strokeWidth, setStrokeWidth] = useState(5);
-  const [fontSize, setFontSize] = useState(20);
-
-  const checkDeselect = (e) => {
-    const clickedOnEmpty = e.target === e.target.getStage();
-    if (clickedOnEmpty) {
-      setSelectedId(null);
+  useEffect(() => {
+    if (selectedId) {
+      onElementSelect(elements.find((el) => el.id === selectedId));
+    } else {
+      onElementSelect(null);
     }
-  };
+  }, [selectedId, elements, onElementSelect]);
 
   const handleMouseDown = (e) => {
     if (selectedTool === "select") {
-      checkDeselect(e);
+      const clickedOnEmpty = e.target === e.target.getStage();
+      if (clickedOnEmpty) {
+        setSelectedId(null);
+        return;
+      }
       return;
     }
 
     setIsDrawing(true);
     const pos = e.target.getStage().getPointerPosition();
-    setStartPoint(pos);
+    const newElement = {
+      id: Date.now().toString(),
+      type: selectedTool,
+      points: [pos.x, pos.y],
+      strokeColor: strokeColor,
+      fillColor: fillColor,
+      strokeWidth: strokeWidth,
+    };
 
     if (selectedTool === "text") {
-      const newTextElement = {
-        id: `${Date.now()}`,
-        type: "text",
-        x: pos.x,
-        y: pos.y,
-        text: "Double click to edit",
-        fontSize: fontSize,
-        fill: strokeColor,
-        draggable: true,
-      };
-      setElements([...elements, newTextElement]);
-    } else if (selectedTool === "pencil") {
-      const newLine = {
-        id: `${Date.now()}`,
-        type: "line",
-        points: [pos.x, pos.y],
-        stroke: strokeColor,
-        strokeWidth: strokeWidth,
-        tension: 0.5,
-        lineCap: "round",
-        lineJoin: "round",
-      };
-      setElements([...elements, newLine]);
+      newElement.text = "Double click to edit";
+      newElement.fontSize = 20;
     }
+
+    setElements([...elements, newElement]);
   };
 
   const handleMouseMove = (e) => {
     if (!isDrawing) return;
 
-    const pos = e.target.getStage().getPointerPosition();
+    const point = e.target.getStage().getPointerPosition();
+    const lastElement = elements[elements.length - 1];
 
-    if (selectedTool === "pencil") {
-      const lastElement = elements[elements.length - 1];
-      if (lastElement && lastElement.type === "line") {
-        const newPoints = [...lastElement.points, pos.x, pos.y];
-        const updatedElement = { ...lastElement, points: newPoints };
-        setElements([...elements.slice(0, -1), updatedElement]);
+    if (lastElement) {
+      let updatedElement = { ...lastElement };
+
+      switch (selectedTool) {
+        case "pencil":
+          updatedElement.points = [...lastElement.points, point.x, point.y];
+          break;
+        case "rectangle":
+          updatedElement.width = point.x - lastElement.points[0];
+          updatedElement.height = point.y - lastElement.points[1];
+          break;
+        case "circle":
+          const dx = point.x - lastElement.points[0];
+          const dy = point.y - lastElement.points[1];
+          updatedElement.radius = Math.sqrt(dx * dx + dy * dy);
+          break;
+        default:
+          break;
       }
-    } else if (selectedTool === "rectangle") {
-      const lastElement = elements[elements.length - 1];
-      if (lastElement && lastElement.type === "rectangle") {
-        const updatedElement = {
-          ...lastElement,
-          width: pos.x - startPoint.x,
-          height: pos.y - startPoint.y,
-        };
-        setElements([...elements.slice(0, -1), updatedElement]);
-      } else {
-        const newRect = {
-          id: `${Date.now()}`,
-          type: "rectangle",
-          x: startPoint.x,
-          y: startPoint.y,
-          width: pos.x - startPoint.x,
-          height: pos.y - startPoint.y,
-          fill: fillColor,
-          stroke: strokeColor,
-          strokeWidth: strokeWidth,
-          draggable: true,
-        };
-        setElements([...elements, newRect]);
-      }
-    } else if (selectedTool === "eraser") {
-      setElements(
-        elements.filter((elem) => {
-          if (elem.type === "line") {
-            // Check if eraser touches the line
-            for (let i = 0; i < elem.points.length; i += 2) {
-              const dx = elem.points[i] - pos.x;
-              const dy = elem.points[i + 1] - pos.y;
-              if (Math.sqrt(dx * dx + dy * dy) < strokeWidth) {
-                return false;
-              }
-            }
-          }
-          return true;
-        }),
-      );
+
+      setElements([...elements.slice(0, -1), updatedElement]);
     }
   };
 
@@ -119,130 +94,109 @@ const Canvas = ({ selectedTool }) => {
     setIsDrawing(false);
   };
 
-  // Handle text editing
-  const handleTextDblClick = (e, element) => {
-    const textNode = e.target;
-    const stage = textNode.getStage();
+  const handleTextDblClick = (textNode) => {
     const textPosition = textNode.absolutePosition();
+    const stageBox = stageRef.current.container().getBoundingClientRect();
 
     const textarea = document.createElement("textarea");
     document.body.appendChild(textarea);
 
-    textarea.value = element.text;
+    textarea.value = textNode.text();
     textarea.style.position = "absolute";
-    textarea.style.top = `${textPosition.y}px`;
-    textarea.style.left = `${textPosition.x}px`;
-    textarea.style.width = `${textNode.width()}px`;
-    textarea.style.height = `${textNode.height()}px`;
-    textarea.style.fontSize = `${element.fontSize}px`;
-    textarea.style.border = "none";
+    textarea.style.top = `${stageBox.top + textPosition.y}px`;
+    textarea.style.left = `${stageBox.left + textPosition.x}px`;
+    textarea.style.fontSize = `${textNode.fontSize()}px`;
     textarea.style.padding = "0px";
     textarea.style.margin = "0px";
-    textarea.style.overflow = "hidden";
-    textarea.style.background = "none";
+    textarea.style.border = "none";
     textarea.style.outline = "none";
-    textarea.style.resize = "none";
 
     textarea.focus();
 
-    textarea.addEventListener("blur", function () {
-      const updatedElements = elements.map((elem) =>
-        elem.id === element.id ? { ...elem, text: textarea.value } : elem,
-      );
-      setElements(updatedElements);
+    textarea.addEventListener("blur", () => {
+      const element = elements.find((el) => el.id === textNode.id());
+      if (element) {
+        const updatedElement = { ...element, text: textarea.value };
+        setElements(
+          elements.map((el) => (el.id === element.id ? updatedElement : el)),
+        );
+      }
       document.body.removeChild(textarea);
     });
   };
 
-  return (
-    <>
-      {/* Properties Editor */}
-      <div className="properties-editor">
-        <div className="property">
-          <label>Stroke Color:</label>
-          <input
-            type="color"
-            value={strokeColor}
-            onChange={(e) => setStrokeColor(e.target.value)}
-          />
-        </div>
-        <div className="property">
-          <label>Fill Color:</label>
-          <input
-            type="color"
-            value={fillColor}
-            onChange={(e) => setFillColor(e.target.value)}
-          />
-        </div>
-        <div className="property">
-          <label>Stroke Width:</label>
-          <input
-            type="range"
-            min="1"
-            max="50"
-            value={strokeWidth}
-            onChange={(e) => setStrokeWidth(parseInt(e.target.value))}
-          />
-        </div>
-        <div className="property">
-          <label>Font Size:</label>
-          <input
-            type="number"
-            value={fontSize}
-            onChange={(e) => setFontSize(parseInt(e.target.value))}
-          />
-        </div>
-      </div>
+  const renderElement = (element) => {
+    const commonProps = {
+      key: element.id,
+      id: element.id,
+      stroke: element.strokeColor,
+      strokeWidth: element.strokeWidth,
+      fill: element.fillColor,
+      draggable: selectedTool === "select",
+      onClick: () => setSelectedId(element.id),
+    };
 
-      <Stage
-        width={window.innerWidth}
-        height={window.innerHeight}
-        onMouseDown={handleMouseDown}
-        onMousemove={handleMouseMove}
-        onMouseup={handleMouseUp}
-        ref={stageRef}
-      >
-        <Layer>
-          {elements.map((element) => {
-            if (element.type === "line") {
-              return (
-                <Line
-                  key={element.id}
-                  {...element}
-                  onClick={() => setSelectedId(element.id)}
-                />
-              );
-            } else if (element.type === "rectangle") {
-              return (
-                <Rect
-                  key={element.id}
-                  {...element}
-                  onClick={() => setSelectedId(element.id)}
-                />
-              );
-            } else if (element.type === "text") {
-              return (
-                <Text
-                  key={element.id}
-                  {...element}
-                  onClick={() => setSelectedId(element.id)}
-                  onDblClick={(e) => handleTextDblClick(e, element)}
-                />
-              );
-            }
-            return null;
-          })}
-          {selectedId && (
-            <Transformer
-              ref={trRef}
-              boundBoxFunc={(oldBox, newBox) => {
-                return newBox;
-              }}
-            />
-          )}
-        </Layer>
-      </Stage>
-    </>
+    switch (element.type) {
+      case "pencil":
+        return <Line {...commonProps} points={element.points} />;
+      case "rectangle":
+        return (
+          <Rect
+            {...commonProps}
+            x={element.points[0]}
+            y={element.points[1]}
+            width={element.width || 0}
+            height={element.height || 0}
+          />
+        );
+      case "circle":
+        return (
+          <Circle
+            {...commonProps}
+            x={element.points[0]}
+            y={element.points[1]}
+            radius={element.radius || 0}
+          />
+        );
+      case "text":
+        return (
+          <Text
+            {...commonProps}
+            x={element.points[0]}
+            y={element.points[1]}
+            text={element.text}
+            fontSize={element.fontSize}
+            onDblClick={(e) => handleTextDblClick(e.target)}
+          />
+        );
+      default:
+        return null;
+    }
+  };
+
+  return (
+    <Stage
+      ref={stageRef}
+      width={window.innerWidth}
+      height={window.innerHeight}
+      scaleX={zoomLevel}
+      scaleY={zoomLevel}
+      onMouseDown={handleMouseDown}
+      onMouseMove={handleMouseMove}
+      onMouseUp={handleMouseUp}
+    >
+      <Layer ref={layerRef}>
+        {elements.map(renderElement)}
+        {selectedId && (
+          <Transformer
+            visible={selectedTool === "select"}
+            boundBoxFunc={(oldBox, newBox) => {
+              return newBox;
+            }}
+          />
+        )}
+      </Layer>
+    </Stage>
   );
 };
 

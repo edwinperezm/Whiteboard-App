@@ -1,0 +1,103 @@
+import {
+  PanTool,
+  Brush,
+  Square,
+  Circle,
+  TextFields,
+  StickyNote2,
+  Eraser,
+  Comment,
+  History,
+  Save,
+  Download,
+  ColorLens,
+} from "@mui/icons-material";
+
+export const TOOLS = {
+  SELECT: {
+    id: "select",
+    name: "Select",
+    icon: PanTool,
+    shortcut: "V",
+    cursor: "default",
+  },
+  PENCIL: {
+    id: "pencil",
+    name: "Pencil",
+    icon: Brush,
+    shortcut: "P",
+    cursor: "crosshair",
+    properties: ["strokeWidth", "strokeColor", "opacity"],
+  },
+  SQUARE: {
+    id: "square",
+    name: "Square",
+    icon: Square,
+    shortcut: "R",
+    cursor: "crosshair",
+    properties: [
+      "strokeWidth",
+      "strokeColor",
+      "fillColor",
+      "opacity",
+      "cornerRadius",
+    ],
+  },
+  CIRCLE: {
+    id: "circle",
+    name: "Circle",
+    icon: Circle,
+    shortcut: "C",
+    cursor: "crosshair",
+    properties: ["strokeWidth", "strokeColor", "fillColor", "opacity"],
+  },
+  TEXT: {
+    id: "text",
+    name: "Text",
+    icon: TextFields,
+    shortcut: "T",
+    cursor: "text",
+    properties: ["fontSize", "fontFamily", "textColor", "textAlign"],
+  },
+  STICKY: {
+    id: "sticky",
+    name: "Sticky Note",
+    icon: StickyNote2,
+    shortcut: "S",
+    cursor: "default",
+    properties: ["backgroundColor", "textColor"],
+  },
+  ERASER: {
+    id: "eraser",
+    name: "Eraser",
+    icon: Eraser,
+    shortcut: "E",
+    cursor: "crosshair",
+    properties: ["eraserSize"],
+  },
+};
+
+export const PROPERTY_DEFAULTS = {
+  strokeWidth: 2,
+  strokeColor: "#000000",
+  fillColor: "#ffffff",
+  opacity: 1,
+  cornerRadius: 0,
+  fontSize: 16,
+  fontFamily: "Arial",
+  textColor: "#000000",
+  textAlign: "left",
+  backgroundColor: "#ffeb3b",
+  eraserSize: 20,
+};
+
+export const KEYBOARD_SHORTCUTS = {
+  UNDO: { key: "Z", ctrl: true },
+  REDO: { key: "Z", ctrl: true, shift: true },
+  DELETE: { key: "Delete" },
+  DUPLICATE: { key: "D", ctrl: true },
+  GROUP: { key: "G", ctrl: true },
+  UNGROUP: { key: "G", ctrl: true, shift: true },
+  SAVE: { key: "S", ctrl: true },
+  SELECT_ALL: { key: "A", ctrl: true },
+};

@@ -1,21 +1,27 @@
 import React from "react";
-import { Add, Remove } from "@mui/icons-material";
+import "../styles/components.css";
 
 const ZoomControls = ({ zoomLevel, onZoomChange }) => {
-  const zoomIn = () => onZoomChange(zoomLevel * 1.2);
-  const zoomOut = () => onZoomChange(zoomLevel / 1.2);
-  const resetZoom = () => onZoomChange(1);
+  const handleZoomIn = () => {
+    onZoomChange(Math.min(zoomLevel * 1.2, 3));
+  };
+
+  const handleZoomOut = () => {
+    onZoomChange(Math.max(zoomLevel / 1.2, 0.5));
+  };
+
+  const handleReset = () => {
+    onZoomChange(1);
+  };
 
   return (
     <div className="zoom-controls">
-      <button onClick={zoomOut} className="zoom-button">
-        <Remove />
+      <button onClick={handleZoomOut} title="Zoom Out">
+        -
       </button>
-      <button onClick={resetZoom} className="zoom-level">
-        {Math.round(zoomLevel * 100)}%
-      </button>
-      <button onClick={zoomIn} className="zoom-button">
-        <Add />
+      <button onClick={handleReset}>{Math.round(zoomLevel * 100)}%</button>
+      <button onClick={handleZoomIn} title="Zoom In">
+        +
       </button>
     </div>
   );
