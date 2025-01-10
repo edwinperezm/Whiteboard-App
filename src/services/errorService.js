@@ -10,11 +10,11 @@ class ErrorService {
       message: error.message,
       stack: error.stack,
       timestamp: new Date(),
-      context
+      context,
     };
 
     // Log to console
-    console.error('Application Error:', errorLog);
+    console.error("Application Error:", errorLog);
 
     // Store in memory (limit to last 100 errors)
     this.errorLog.push(errorLog);
@@ -23,11 +23,11 @@ class ErrorService {
     }
 
     // Notify error listeners
-    this.errorListeners.forEach(listener => {
+    this.errorListeners.forEach((listener) => {
       try {
         listener(errorLog);
       } catch (listenerError) {
-        console.error('Error in error listener:', listenerError);
+        console.error("Error in error listener:", listenerError);
       }
     });
 
@@ -38,10 +38,12 @@ class ErrorService {
   reportErrorToService(errorLog) {
     try {
       // Use navigator.sendBeacon for more reliable error reporting
-      const blob = new Blob([JSON.stringify(errorLog)], {type: 'application/json'});
-      navigator.sendBeacon('/api/error-log', blob);
+      const blob = new Blob([JSON.stringify(errorLog)], {
+        type: "application/json",
+      });
+      navigator.sendBeacon("/api/error-log", blob);
     } catch (reportError) {
-      console.error('Error reporting failed', reportError);
+      console.error("Error reporting failed", reportError);
     }
   }
 
