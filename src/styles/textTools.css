@@ -1,0 +1,25 @@
+.text-tools {
+    display: flex;
+    gap: 8px;
+    padding: 8px;
+    background: white;
+    border-radius: 4px;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+  }
+  
+  .text-tools select {
+    width: 120px;
+    height: 32px;
+  }
+  
+  .text-tools input {
+    width: 60px;
+    height: 32px;
+  }
+  
+  .text-tools button {
+    width: 32px;
+    height: 32px;
+    font-weight: bold;
+  }
+  

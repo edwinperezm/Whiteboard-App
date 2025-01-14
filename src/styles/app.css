@@ -1,0 +1,29 @@
+.main-layout {
+  display: flex;
+  flex-direction: column;
+  height: 100vh;
+}
+
+.workspace {
+  display: flex;
+  flex: 1;
+  background: #f5f5f7;
+}
+
+.canvas-container {
+  flex: 1;
+  position: relative;
+  background: white;
+}
+
+.toolbar {
+  width: 60px;
+  background: white;
+  border-right: 1px solid #eee;
+}
+
+.right-panel {
+  width: 240px;
+  background: white;
+  border-left: 1px solid #eee;
+}

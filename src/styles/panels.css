@@ -112,3 +112,36 @@
 .layer-item:hover .drag-handle {
   opacity: 0.6;
 }
+.layers-panel {
+  padding: 16px;
+}
+
+.layer {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 8px;
+  border-radius: 4px;
+  cursor: pointer;
+}
+
+.layer.selected {
+  background: var(--primary-color);
+  color: white;
+}
+
+.layer-controls {
+  display: flex;
+  gap: 4px;
+}
+
+.layer-controls button {
+  background: none;
+  border: none;
+  cursor: pointer;
+  opacity: 0.6;
+}
+
+.layer-controls button:hover {
+  opacity: 1;
+}

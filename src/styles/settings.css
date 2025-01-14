@@ -1,0 +1,17 @@
+.settings-panel {
+    padding: 16px;
+    border-top: 1px solid #eee;
+  }
+  
+  .setting-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 8px 0;
+  }
+  
+  .setting-item label {
+    color: #666;
+    font-size: 14px;
+  }
+  

@@ -134,3 +134,46 @@
 .zoom-controls button:hover {
   background: #f0f0f0;
 }
+.app-container {
+  display: flex;
+  flex-direction: column;
+  height: 100vh;
+  background-color: #f5f5f7;
+}
+
+.workspace {
+  display: flex;
+  flex: 1;
+  position: relative;
+}
+
+.canvas-container {
+  flex: 1;
+  background: white;
+  position: relative;
+}
+.property-editor {
+  padding: 16px;
+}
+
+.properties {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.user-presence {
+  display: flex;
+  gap: 4px;
+}
+
+.user-avatar {
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: white;
+  font-weight: bold;
+}

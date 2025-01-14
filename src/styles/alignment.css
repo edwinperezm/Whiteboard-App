@@ -1,0 +1,25 @@
+.alignment-tools {
+    display: flex;
+    gap: 4px;
+    padding: 8px;
+    background: white;
+    border-radius: 4px;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+  }
+  
+  .alignment-tools button {
+    width: 32px;
+    height: 32px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    background: white;
+    cursor: pointer;
+  }
+  
+  .alignment-tools button:hover {
+    background: #f5f5f5;
+  }
+  
