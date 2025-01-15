@@ -1,4 +1,5 @@
 import { create } from 'zustand';
+
 interface AppState {
   zoom: number;
   elements: Element[];
@@ -9,11 +10,9 @@ interface AppState {
 }
 
 interface Element {
-  Define the properties of your Element type here
-  For example:
   id: string;
   type: string;
-  Add other properties as needed
+  // Add other properties as needed
 }
 
 export const useAppStore = create<AppState>((set) => ({

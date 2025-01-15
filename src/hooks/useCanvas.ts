@@ -1,4 +1,4 @@
-import { useRef, useEffect } from 'react';
+import { useRef } from 'react';
 import { useAppStore } from '../store/AppStore';
 
 export const useCanvas = () => {
@@ -12,7 +12,7 @@ export const useCanvas = () => {
     };
 
     addElement({
-      id: Date.now(),
+      id: Date.now().toString(),
       type: selectedTool,
       ...point
     });
