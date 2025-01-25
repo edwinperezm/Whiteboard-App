@@ -1,16 +1,22 @@
 import React from 'react';
-import { Canvas } from './components/Canvas/CanvasRenderer.tsx';
-import { AppProvider } from './components/contexts/AppContext';
-import { useAppStore } from './store/AppStore.ts';
+import { Canvas } from './components/Canvas/CanvasRenderer';
+import { Tools } from './components/DrawingTools/Tools';
+import { LayersList } from './components/LayersList/LayersList';
+import { StatusBar } from './components/StatusBar/Status';
+import { TopBar } from './components/TopBar/TopBar';
 import './App.css';
 
 function App() {
   return (
-    <AppProvider>
-      <div className="app">
+    <div className="app">
+      <TopBar />
+      <div className="workspace">
+        <Tools />
         <Canvas />
+        <LayersList />
       </div>
-    </AppProvider>
+      <StatusBar />
+    </div>
   );
 }
 

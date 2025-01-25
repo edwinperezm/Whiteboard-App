@@ -6,16 +6,8 @@ export const Tools = () => {
   const { selectedTool, updateTool } = useAppStore();
 
   return (
-    <div className="drawing-tools">
-      {Object.values(TOOLS).map(tool => (
-        <button
-          key={tool.id}
-          className={`tool ${selectedTool === tool.id ? 'active' : ''}`}
-          onClick={() => updateTool(tool.id)}
-        >
-          {tool.icon}
-        </button>
-      ))}
+    <div className="tools-container">
+      {/* Drawing tools will go here */}
     </div>
   );
 };

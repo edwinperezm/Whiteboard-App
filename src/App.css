@@ -1,7 +1,41 @@
 .app {
-    width: 100vw;
-    height: 100vh;
-    overflow: hidden;
-    position: relative;
-  }
-  
+  display: flex;
+  flex-direction: column;
+  height: 100vh;
+  width: 100vw;
+}
+
+.workspace {
+  display: flex;
+  flex: 1;
+  overflow: hidden;
+}
+
+.canvas-container {
+  flex: 1;
+  position: relative;
+}
+
+.tools-container {
+  width: 60px;
+  background: #f0f0f0;
+  border-right: 1px solid #ddd;
+}
+
+.layers-container {
+  width: 200px;
+  background: #f0f0f0;
+  border-left: 1px solid #ddd;
+}
+
+.status-bar {
+  height: 30px;
+  background: #f0f0f0;
+  border-top: 1px solid #ddd;
+}
+
+.top-bar {
+  height: 50px;
+  background: #f0f0f0;
+  border-bottom: 1px solid #ddd;
+}
