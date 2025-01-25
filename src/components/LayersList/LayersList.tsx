@@ -1,13 +1,17 @@
 // filepath: src/components/LayersList/LayersList.tsx
 import React from 'react';
-import { useAppStore } from '../store';
+import { useAppStore } from '../../store/AppStore';
 
-export const LayersList: React.FC = () => {
-  const { elements, selectElement } = useAppStore();
+export const LayersList = () => {
+  const { elements } = useAppStore();
 
   return (
-    <div className="layers-container">
-      {/* Layers list will go here */}
+    <div className="layers-list">
+      {elements.map((element) => (
+        <div key={element.id} className="layer-item">
+          {element.type} - {element.id}
+        </div>
+      ))}
     </div>
   );
 };

@@ -1,19 +1,15 @@
 import React from 'react';
-import CanvasRenderer from './components/Canvas/CanvasRenderer';
-import Tools from './components/DrawingTools/Tools';
-import LayersList from './components/LayersList/LayersList';
-import StatusBar from './components/StatusBar/Status';
-import TopBar from './components/TopBar/TopBar';
+import { Canvas } from './components/Canvas/CanvasRenderer';
+import { LayersList } from './components/LayersList/LayersList';
 import './App.css';
 
-const App: React.FC = () => {
+const App = () => {
   return (
-    <div className="app-container">
-      <TopBar />
-      <Tools />
-      <CanvasRenderer />
+    <div className="app">
+      <div className="workspace">
+        <Canvas />
       <LayersList />
-      <StatusBar />
+    </div>
     </div>
   );
 };

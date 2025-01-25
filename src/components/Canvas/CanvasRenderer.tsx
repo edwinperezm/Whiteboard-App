@@ -1,17 +1,19 @@
-import React, { createContext, useContext } from 'react';
-import { Stage, Layer } from 'react-konva';
+import React, { createContext, useContext, ReactNode } from 'react';
+import { Stage as KonvaStage, Layer } from 'react-konva';
 import { create } from 'zustand';
-import { useAppStore } from '../../store/AppStore';
 import { Elements } from './Element';
 import { CanvasEvents } from './CanvasEvents';
 
 const AppContext = createContext(null);
 
-export const AppProvider = ({ children }) => {
+interface AppProviderProps {
+  children: ReactNode;
+}
+
+export const AppProvider = ({ children }: AppProviderProps) => {
   const store = useAppStore();
   return <AppContext.Provider value={store}>{children}</AppContext.Provider>;
 };
-
 export const useApp = () => useContext(AppContext);
 
 interface AppState {
@@ -28,7 +30,7 @@ export const Canvas: React.FC = () => {
   const { zoom } = useAppStore();
   return (
     <div className="canvas-container" data-testid="canvas">
-      <Stage 
+      <KonvaStage 
         width={window.innerWidth} 
         height={window.innerHeight}
         scaleX={zoom}
@@ -38,7 +40,7 @@ export const Canvas: React.FC = () => {
           <Elements />
           <CanvasEvents />
         </Layer>
-      </Stage>
+      </KonvaStage>
     </div>
   );
 };
