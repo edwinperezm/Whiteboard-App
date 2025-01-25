@@ -1,20 +1,23 @@
-import SocketService from './SocketService';
+import { User } from "../core/types";
+import { socketService } from "./SocketService";
 
 class AuthService {
-  async login(userData) {
-    localStorage.setItem('user', JSON.stringify(userData));
-    SocketService.socket.emit('user-login', userData);
+  async login(userData: User) {
+    localStorage.setItem("user", JSON.stringify(userData));
+    socketService.socket.emit("user-login", userData);
     return userData;
   }
 
   logout() {
-    localStorage.removeItem('user');
-    SocketService.socket.emit('user-logout');
+    localStorage.removeItem("user");
+    socketService.socket.emit("user-logout");
   }
 
-  getCurrentUser() {
-    return JSON.parse(localStorage.getItem('user'));
+  getCurrentUser(): User | null {
+    const userStr = localStorage.getItem("user");
+    return userStr ? JSON.parse(userStr) : null;
   }
 }
 
-export default new AuthService();
+export const authService = new AuthService();
+export default authService;

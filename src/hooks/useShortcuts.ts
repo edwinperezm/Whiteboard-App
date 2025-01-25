@@ -1,19 +1,30 @@
-import { useEffect } from 'react';
-import { useAppStore } from '../store/AppStore';
+import { useEffect } from "react";
+import { useAppStore } from "../store/AppStore";
 
 export const useShortcuts = () => {
-  const { undo, redo, deleteSelected } = useAppStore();
+  const store = useAppStore();
 
   useEffect(() => {
-    const handleKeyboard = (e: KeyboardEvent) => {
+    const handleKeyDown = (e: KeyboardEvent) => {
       if (e.ctrlKey || e.metaKey) {
-        if (e.key === 'z') undo();
-        if (e.key === 'y') redo();
+        switch (e.key.toLowerCase()) {
+          case "z":
+            if (e.shiftKey) {
+              store.redo();
+            } else {
+              store.undo();
+            }
+            break;
+          case "y":
+            store.redo();
+            break;
+        }
+      } else if (e.key === "Delete" || e.key === "Backspace") {
+        store.deleteSelected();
       }
-      if (e.key === 'Delete') deleteSelected();
     };
 
-    window.addEventListener('keydown', handleKeyboard);
-    return () => window.removeEventListener('keydown', handleKeyboard);
-  }, []);
+    document.addEventListener("keydown", handleKeyDown);
+    return () => document.removeEventListener("keydown", handleKeyDown);
+  }, [store]);
 };

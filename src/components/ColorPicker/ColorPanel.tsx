@@ -1,31 +1,38 @@
-import React from 'react';
-import { useAppStore } from '../../store/AppStore';
+import React from "react";
+import { observer } from "mobx-react-lite";
+import { useAppStore } from "../../store/AppStore";
 
-export const ColorPanel = () => {
-  const { selectedColor, setColor } = useAppStore();
-  
+export const ColorPicker: React.FC = observer(() => {
+  const store = useAppStore();
+
   const colors = [
-    '#000000', '#FF0000', '#00FF00', '#0000FF',
-    '#FFFF00', '#FF00FF', '#00FFFF', '#FFFFFF'
+    "#000000",
+    "#FF0000",
+    "#00FF00",
+    "#0000FF",
+    "#FFFF00",
+    "#FF00FF",
+    "#00FFFF",
+    "#FFFFFF",
   ];
-  
+
   return (
-    <div className="color-panel">
+    <div className="color-picker">
       <div className="color-grid">
-        {colors.map(color => (
+        {colors.map((color) => (
           <button
             key={color}
-            className={`color-swatch ${selectedColor === color ? 'active' : ''}`}
+            className={`color-swatch ${store.selectedColor === color ? "active" : ""}`}
             style={{ backgroundColor: color }}
-            onClick={() => setColor(color)}
+            onClick={() => store.setColor(color)}
           />
         ))}
       </div>
       <input
         type="color"
-        value={selectedColor}
-        onChange={e => setColor(e.target.value)}
+        value={store.selectedColor}
+        onChange={(e) => store.setColor(e.target.value)}
       />
     </div>
   );
-};
+});

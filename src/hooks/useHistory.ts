@@ -1,20 +1,22 @@
-import { useCallback } from 'react';
-import { useAppStore } from '../store/AppStore';
+import { useCallback } from "react";
+import { useAppStore } from "../store/AppStore";
+import { Element } from "../core/types";
 
 export const useHistory = () => {
-  const { history, currentIndex, updateState } = useAppStore();
+  const store = useAppStore();
 
-  const undo = useCallback(() => {
-    if (currentIndex > 0) {
-      updateState(history[currentIndex - 1]);
-    }
-  }, [currentIndex, history]);
+  const updateState = useCallback(
+    (elements: Element[]) => {
+      store.elements = [...elements];
+      store.history.push([...elements]);
+      store.currentIndex++;
+    },
+    [store],
+  );
 
-  const redo = useCallback(() => {
-    if (currentIndex < history.length - 1) {
-      updateState(history[currentIndex + 1]);
-    }
-  }, [currentIndex, history]);
-
-  return { undo, redo };
+  return {
+    history: store.history,
+    currentIndex: store.currentIndex,
+    updateState,
+  };
 };

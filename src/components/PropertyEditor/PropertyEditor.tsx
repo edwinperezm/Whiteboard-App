@@ -1,28 +1,44 @@
-import React from 'react';
-import { useAppStore } from '../../store/AppStore';
+import React from "react";
+import { observer } from "mobx-react-lite";
+import { useAppStore } from "../../store/AppStore";
+import { ColorPicker } from "../ColorPicker/ColorPanel";
+import { TextTools } from "../TextEditor/TextTools";
 
-export const PropertyEditor = () => {
-  const { selectedElement, updateElement } = useAppStore();
+export const PropertyEditor: React.FC = observer(() => {
+  const store = useAppStore();
+
+  if (!store.selectedElement) return null;
+
+  const updateProperty = (key: string, value: any) => {
+    store.updateElement({
+      ...store.selectedElement!,
+      properties: {
+        ...store.selectedElement!.properties,
+        [key]: value,
+      },
+    });
+  };
 
   return (
     <div className="property-editor">
       <h3>Properties</h3>
-      {selectedElement && (
-        <div className="properties">
-          <input 
-            type="color" 
-            value={selectedElement.fill} 
-            onChange={e => updateElement({ ...selectedElement, fill: e.target.value })} 
+      <div className="properties">
+        <div className="property-group">
+          <label>Position</label>
+          <input
+            type="number"
+            value={store.selectedElement.position.x}
+            onChange={(e) => updateProperty("x", Number(e.target.value))}
           />
-          <input 
-            type="range" 
-            min="1" 
-            max="20" 
-            value={selectedElement.strokeWidth} 
-            onChange={e => updateElement({ ...selectedElement, strokeWidth: e.target.value })} 
+          <input
+            type="number"
+            value={store.selectedElement.position.y}
+            onChange={(e) => updateProperty("y", Number(e.target.value))}
           />
         </div>
-      )}
+        <ColorPicker />
+        {store.selectedElement.type === ElementType.TEXT && <TextTools />}
+      </div>
     </div>
   );
-};
+});

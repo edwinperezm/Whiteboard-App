@@ -1,18 +1,23 @@
-import { useState, useEffect } from 'react';
-import { useAppStore } from '../store/AppStore';
+import { useState, useEffect } from "react";
+import { useAppStore } from "../store/AppStore";
 
 export const useTextEditor = () => {
-  const { selectedElement, updateElement } = useAppStore();
+  const store = useAppStore();
   const [isEditing, setIsEditing] = useState(false);
 
   const startEditing = () => {
-    if (selectedElement?.type === 'text') {
+    if (store.selectedElement?.type === "text") {
       setIsEditing(true);
     }
   };
 
   const stopEditing = (text: string) => {
-    updateElement({ ...selectedElement, text });
+    if (store.selectedElement) {
+      store.updateElement({
+        ...store.selectedElement,
+        properties: { ...store.selectedElement.properties, text },
+      });
+    }
     setIsEditing(false);
   };
 

@@ -1,21 +1,27 @@
-import { useRef, useEffect } from 'react';
-import { useAppStore } from '../store/AppStore';
+import { useRef, useEffect } from "react";
+import { useAppStore } from "../store/AppStore";
+import { KonvaEventObject } from "konva/lib/Node";
+import { Element, Point } from "../core/types";
 
 export const useCanvas = () => {
-  const canvasRef = useRef(null);
+  const canvasRef = useRef<HTMLDivElement>(null);
   const { selectedTool, addElement } = useAppStore();
 
-  const handleDraw = (e) => {
-    const point = {
+  const handleDraw = (e: KonvaEventObject<MouseEvent>) => {
+    const point: Point = {
       x: e.evt.layerX,
-      y: e.evt.layerY
+      y: e.evt.layerY,
     };
 
-    addElement({
-      id: Date.now(),
+    const newElement: Element = {
+      id: Date.now().toString(),
       type: selectedTool,
-      ...point
-    });
+      position: point,
+      properties: {},
+      data: null,
+    };
+
+    addElement(newElement);
   };
 
   return { canvasRef, handleDraw };

@@ -1,22 +1,63 @@
-import React from 'react';
-import { useAppStore } from '../../store/AppStore';
+import React from "react";
+import { observer } from "mobx-react-lite";
+import { useAppStore } from "../../store/AppStore";
 
-export const TextTools = () => {
-  const { selectedElement, updateElement } = useAppStore((state) => ({
-    selectedElement: state.selectedElement,
-    updateElement: state.updateElement
-  }));
-  
+export const TextTools: React.FC = observer(() => {
+  const store = useAppStore();
+
+  if (
+    !store.selectedElement ||
+    store.selectedElement.type !== ElementType.TEXT
+  ) {
+    return null;
+  }
+
+  const updateTextProperty = (key: string, value: any) => {
+    store.updateElement({
+      ...store.selectedElement!,
+      properties: {
+        ...store.selectedElement!.properties,
+        [key]: value,
+      },
+    });
+  };
+
   return (
     <div className="text-tools">
-      <select onChange={e => updateElement({ fontFamily: e.target.value })}>
+      <select
+        value={store.selectedElement.properties.fontFamily || "Arial"}
+        onChange={(e) => updateTextProperty("fontFamily", e.target.value)}
+      >
         <option value="Arial">Arial</option>
         <option value="Helvetica">Helvetica</option>
         <option value="Times">Times</option>
       </select>
-      <input type="number" min="8" max="72" onChange={e => updateElement({ fontSize: e.target.value })} />
-      <button onClick={() => updateElement({ bold: !selectedElement.bold })}>B</button>
-      <button onClick={() => updateElement({ italic: !selectedElement.italic })}>I</button>
+      <input
+        type="number"
+        min="8"
+        max="72"
+        value={store.selectedElement.properties.fontSize || 16}
+        onChange={(e) => updateTextProperty("fontSize", Number(e.target.value))}
+      />
+      <button
+        className={store.selectedElement.properties.bold ? "active" : ""}
+        onClick={() =>
+          updateTextProperty("bold", !store.selectedElement!.properties.bold)
+        }
+      >
+        B
+      </button>
+      <button
+        className={store.selectedElement.properties.italic ? "active" : ""}
+        onClick={() =>
+          updateTextProperty(
+            "italic",
+            !store.selectedElement!.properties.italic,
+          )
+        }
+      >
+        I
+      </button>
     </div>
   );
-};
+});

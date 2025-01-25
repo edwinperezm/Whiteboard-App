@@ -1,23 +1,30 @@
-import { socket } from '../api/socket';
+import { socket } from "../api/socket";
+import { User, Element } from "../core/types";
+
+interface CanvasUpdate {
+  elements: Element[];
+  action: string;
+  userId: string;
+}
 
 class CollaborationService {
-  private roomId: string;
+  private roomId: string = ""; // Initialize with empty string
 
-  joinRoom(roomId: string, userData: any) {
+  joinRoom(roomId: string, userData: User) {
     this.roomId = roomId;
-    socket.emit('join-room', { roomId, userData });
+    socket.emit("join-room", { roomId, userData });
   }
 
-  sendUpdate(update: any) {
-    socket.emit('canvas-update', {
+  sendUpdate(update: CanvasUpdate) {
+    socket.emit("canvas-update", {
       roomId: this.roomId,
       update,
-      timestamp: Date.now()
+      timestamp: Date.now(),
     });
   }
 
-  onUpdate(callback: (update: any) => void) {
-    socket.on('canvas-update', callback);
+  onUpdate(callback: (update: CanvasUpdate) => void) {
+    socket.on("canvas-update", callback);
   }
 }
 

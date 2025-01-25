@@ -1,21 +1,30 @@
-import React from 'react';
-import { useCollaboration } from '../../hooks/useCollaboration';
+import React from "react";
+import { observer } from "mobx-react-lite";
+import { useCollaboration } from "../../hooks/useCollaboration";
+import { User } from "../../core/types";
 
-export const Cursors = () => {
-  const { cursors } = useCollaboration();
-  
+interface CursorProps {
+  user: User;
+}
+
+const Cursor: React.FC<CursorProps> = ({ user }) => (
+  <div
+    className="remote-cursor"
+    style={{
+      transform: `translate(${user.cursor?.x ?? 0}px, ${user.cursor?.y ?? 0}px)`,
+      backgroundColor: user.color,
+    }}
+  >
+    <div className="cursor-name">{user.name}</div>
+  </div>
+);
+
+export const CollaborativeCursors: React.FC = observer(() => {
+  const { users } = useCollaboration();
+
   return (
-    <>
-      {cursors.map(cursor => (
-        <div 
-          key={cursor.userId}
-          className="cursor"
-          style={{
-            transform: `translate(${cursor.x}px, ${cursor.y}px)`,
-            backgroundColor: cursor.color
-          }}
-        />
-      ))}
-    </>
+    <div className="collaborative-cursors">
+      {users.map((user) => user.cursor && <Cursor key={user.id} user={user} />)}
+    </div>
   );
-};
+});

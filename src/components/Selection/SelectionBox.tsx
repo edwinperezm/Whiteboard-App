@@ -1,31 +1,33 @@
-import React from 'react';
-import { Rect, Transformer } from 'react-konva';
-import { useAppStore } from '../../store/AppStore';
+import React from "react";
+import { Rect, Transformer } from "react-konva";
+import { observer } from "mobx-react-lite";
+import { useAppStore } from "../../store/AppStore";
 
-export const SelectionBox = () => {
-  const { selectedElements, updateElements } = useAppStore();
-  
+export const SelectionBox: React.FC = observer(() => {
+  const store = useAppStore();
+
+  if (!store.selectedElement) return null;
+
   return (
-    <>
-      {selectedElements.map(element => (
-        <Transformer
-          key={element.id}
-          boundBoxFunc={(oldBox, newBox) => {
-            return newBox;
-          }}
-          onTransformEnd={(e) => {
-            const node = e.target;
-            updateElements({
-              ...element,
-              x: node.x(),
-              y: node.y(),
-              width: node.width() * node.scaleX(),
-              height: node.height() * node.scaleY(),
-              rotation: node.rotation()
-            });
-          }}
-        />
-      ))}
-    </>
+    <Transformer
+      node={null} // Will be set by Konva
+      enabledAnchors={["top-left", "top-right", "bottom-left", "bottom-right"]}
+      boundBoxFunc={(oldBox, newBox) => {
+        // Limit resize if needed
+        return newBox;
+      }}
+      onTransformEnd={(e) => {
+        const node = e.target;
+        store.updateElement({
+          ...store.selectedElement!,
+          properties: {
+            ...store.selectedElement!.properties,
+            width: node.width() * node.scaleX(),
+            height: node.height() * node.scaleY(),
+            rotation: node.rotation(),
+          },
+        });
+      }}
+    />
   );
-};
+});

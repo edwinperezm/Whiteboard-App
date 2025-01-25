@@ -1,26 +1,27 @@
-import { useState, useEffect } from 'react';
-import { useAppStore } from '../store/AppStore';
+import { useState, useEffect } from "react";
+import { useAppStore } from "../store/AppStore";
+import { Element, Guide } from "../core/types";
 
 export const useGuides = () => {
-  const { elements, selectedElement } = useAppStore();
-  const [guides, setGuides] = useState([]);
+  const store = useAppStore();
+  const [guides, setGuides] = useState<Guide[]>([]);
 
-  const calculateGuides = () => {
-    if (!selectedElement) return [];
-    
-    return elements
-      .filter(el => el.id !== selectedElement.id)
-      .map(el => ({
-        x: el.x,
-        y: el.y,
-        width: el.width,
-        height: el.height
+  const calculateGuides = (): Guide[] => {
+    if (!store.selectedElement || !store.elements.length) return [];
+
+    return store.elements
+      .filter((el) => el.id !== store.selectedElement?.id)
+      .map((el) => ({
+        x: el.position.x,
+        y: el.position.y,
+        width: el.properties.width || 0,
+        height: el.properties.height || 0,
       }));
   };
 
   useEffect(() => {
     setGuides(calculateGuides());
-  }, [selectedElement, elements]);
+  }, [store.selectedElement, store.elements]);
 
   return { guides };
 };

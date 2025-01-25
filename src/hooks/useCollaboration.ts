@@ -1,17 +1,18 @@
-import { useState, useEffect } from 'react';
-import SocketService from '../services/SocketService';
+import { useState, useEffect } from "react";
+import SocketService from "../services/SocketService";
+import { User } from "../core/types";
 
 export const useCollaboration = () => {
-  const [users, setUsers] = useState([]);
-  
+  const [users, setUsers] = useState<User[]>([]);
+
   useEffect(() => {
     SocketService.connect();
-    SocketService.socket.on('user-joined', user => {
-      setUsers(prev => [...prev, user]);
+    SocketService.socket.on("user-joined", (user: User) => {
+      setUsers((prev) => [...prev, user]);
     });
-    
+
     return () => {
-      SocketService.socket.off('user-joined');
+      SocketService.socket.off("user-joined");
     };
   }, []);
 
