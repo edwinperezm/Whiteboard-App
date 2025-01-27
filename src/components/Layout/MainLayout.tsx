@@ -4,7 +4,7 @@ import { TopBar } from "./TopBar";
 import { ToolBar } from "../ToolBar/ToolBar";
 import { Canvas } from "../Canvas/CanvasRenderer";
 import { RightPanel } from "../RightPanel/RightPanel";
-import { StatusBar } from "../StatusBar/Status";
+import { Status } from "../StatusBar/Status";
 import { CollaborativeCursors } from "../CollaborativeCursors/Cursors";
 
 export const MainLayout: React.FC = observer(() => {
@@ -19,7 +19,7 @@ export const MainLayout: React.FC = observer(() => {
         </div>
         <RightPanel />
       </div>
-      <StatusBar />
+      <Status />
     </div>
   );
 });

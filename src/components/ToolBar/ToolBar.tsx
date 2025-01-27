@@ -1,8 +1,8 @@
 import React from "react";
 import { observer } from "mobx-react-lite";
 import { useAppStore } from "../../store/AppStore";
-import { ElementType } from "../../core/types";
 import { TOOLS } from "../../config/toolConfig";
+import { Tooltip } from "@mui/material";
 
 export const ToolBar: React.FC = observer(() => {
   const store = useAppStore();
@@ -10,15 +10,18 @@ export const ToolBar: React.FC = observer(() => {
   return (
     <div className="toolbar">
       {Object.values(TOOLS).map((tool) => (
-        <button
+        <Tooltip 
           key={tool.id}
-          className={`tool-btn ${store.selectedTool === tool.id ? "active" : ""}`}
-          onClick={() => store.setSelectedTool(tool.id as ElementType)}
-          title={tool.name}
+          title={`${tool.name} (${tool.shortcut})`}
+          placement="right"
         >
-          <tool.icon />
-          <span className="tool-shortcut">{tool.shortcut}</span>
-        </button>
+          <button
+            className={`tool-btn ${store.selectedTool === tool.id ? "active" : ""}`}
+            onClick={() => store.setSelectedTool(tool.id)}
+          >
+            <tool.icon />
+          </button>
+        </Tooltip>
       ))}
     </div>
   );

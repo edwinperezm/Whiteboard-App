@@ -3,6 +3,7 @@ import { observer } from "mobx-react-lite";
 import { useAppStore } from "../../store/AppStore";
 import { ColorPicker } from "../ColorPicker/ColorPanel";
 import { TextTools } from "../TextEditor/TextTools";
+import { ElementType } from "../../core/types";
 
 export const PropertyEditor: React.FC = observer(() => {
   const store = useAppStore();
@@ -10,10 +11,12 @@ export const PropertyEditor: React.FC = observer(() => {
   if (!store.selectedElement) return null;
 
   const updateProperty = (key: string, value: any) => {
+    if (!store.selectedElement) return;
+    
     store.updateElement({
-      ...store.selectedElement!,
+      ...store.selectedElement,
       properties: {
-        ...store.selectedElement!.properties,
+        ...store.selectedElement.properties,
         [key]: value,
       },
     });

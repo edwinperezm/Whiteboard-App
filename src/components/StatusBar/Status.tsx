@@ -1,7 +1,7 @@
 import React from 'react';
 import { useAppStore } from '../../store/AppStore';
 
-export const Status = () => {
+export const Status: React.FC = () => {
   const { zoom, selectedElement, cursorPosition } = useAppStore();
   
   return (

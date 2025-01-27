@@ -1,4 +1,5 @@
 import { ComponentType } from "react";
+import { SvgIconProps } from "@mui/material";
 
 export interface Point {
   x: number;
@@ -6,12 +7,11 @@ export interface Point {
 }
 
 export enum ElementType {
+  SELECT = "select",
   RECTANGLE = "rectangle",
   CIRCLE = "circle",
   LINE = "line",
-  TEXT = "text",
-  FREEHAND = "freehand",
-  SELECT = "select",
+  TEXT = "text"
 }
 
 export interface ElementProperties {
@@ -21,32 +21,27 @@ export interface ElementProperties {
   stroke?: string;
   strokeWidth?: number;
   text?: string;
+  fontSize?: number;
+  fontFamily?: string;
+  points?: number[];
+  radius?: number;
   rotation?: number;
-  [key: string]: any;
-}
-
-export interface Tool {
-  id: string;
-  name: string;
-  icon: ComponentType;
-  shortcut: string;
-  cursor: string;
-  properties: ToolProperty[];
-}
-
-export interface ToolProperty {
-  id: string;
-  type: "color" | "number" | "select" | "boolean";
-  label: string;
-  defaultValue: any;
 }
 
 export interface Element {
   id: string;
   type: ElementType;
   position: Point;
-  properties: ElementProperties; // Use the specific interface instead of Record<string, any>
-  data?: any; // Made optional since it might not always be needed
+  properties: ElementProperties;
+}
+
+export interface Tool {
+  id: ElementType;
+  name: string;
+  icon: ComponentType<SvgIconProps>;
+  shortcut: string;
+  cursor: string;
+  properties: ElementProperties;
 }
 
 export interface User {
@@ -56,24 +51,21 @@ export interface User {
   cursor?: Point;
 }
 
-export interface HistoryEntry {
-  id: string;
-  timestamp: number;
-  userId: string;
-  action: string;
-  data: any;
-}
-
 export interface CanvasState {
   elements: Element[];
-  selectedId: string | null;
-  tool: ElementType;
+  version: number;
 }
 
-// Add a Guide interface that can be used across components
-export interface Guide {
-  x: number;
-  y: number;
+export interface Bounds {
+  left: number;
+  top: number;
+  right: number;
+  bottom: number;
   width: number;
   height: number;
+}
+
+export interface Guide {
+  position: number;
+  orientation: 'horizontal' | 'vertical';
 }

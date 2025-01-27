@@ -1,16 +1,16 @@
 import { User } from "../core/types";
-import { socketService } from "./SocketService";
+import SocketService from "./SocketService";
 
 class AuthService {
   async login(userData: User) {
     localStorage.setItem("user", JSON.stringify(userData));
-    socketService.socket.emit("user-login", userData);
+    SocketService.socket.emit("user-login", userData);
     return userData;
   }
 
   logout() {
     localStorage.removeItem("user");
-    socketService.socket.emit("user-logout");
+    SocketService.socket.emit("user-logout");
   }
 
   getCurrentUser(): User | null {

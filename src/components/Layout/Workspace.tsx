@@ -5,12 +5,23 @@ import { useAppStore } from "../../store/AppStore";
 
 export const Workspace: React.FC = observer(() => {
   const store = useAppStore();
+  const workspaceRef = React.useRef<HTMLDivElement>(null);
 
   const handleWheel = (e: React.WheelEvent) => {
-    if (e.ctrlKey) {
+    if (e.ctrlKey && workspaceRef.current) {
       e.preventDefault();
-      const delta = e.deltaY > 0 ? -0.1 : 0.1;
-      store.setZoom(store.zoom + delta);
+      
+      // Get cursor position relative to the workspace
+      const rect = workspaceRef.current.getBoundingClientRect();
+      const x = (e.clientX - rect.left) / store.zoom;
+      const y = (e.clientY - rect.top) / store.zoom;
+      
+      // Calculate new zoom
+      const delta = e.deltaY > 0 ? 0.9 : 1.1;
+      const newZoom = store.zoom * delta;
+      
+      // Update zoom while maintaining cursor position
+      store.setZoom(newZoom, { x, y });
     }
   };
 
@@ -20,6 +31,7 @@ export const Workspace: React.FC = observer(() => {
 
   return (
     <div
+      ref={workspaceRef}
       className="workspace"
       onWheel={handleWheel}
       onMouseMove={handleMouseMove}

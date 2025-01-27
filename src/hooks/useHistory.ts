@@ -8,6 +8,7 @@ export const useHistory = () => {
   const updateState = useCallback(
     (elements: Element[]) => {
       store.elements = [...elements];
+      store.history = store.history.slice(0, store.currentIndex + 1);
       store.history.push([...elements]);
       store.currentIndex++;
     },

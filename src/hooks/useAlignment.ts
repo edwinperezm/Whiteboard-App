@@ -59,7 +59,11 @@ export const useAlignment = () => {
         }
       });
 
-      store.updateElements(alignedElements);
+      if (typeof store.updateElements === 'function') {
+        store.updateElements(alignedElements);
+      } else {
+        console.error('updateElements method is not available in AppStore');
+      }
     },
     [store],
   );

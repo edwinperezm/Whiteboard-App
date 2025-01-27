@@ -1,7 +1,7 @@
 import React from 'react';
 import { useAppStore } from '../../store/AppStore';
 
-export const Properties = () => {
+export const Properties: React.FC = () => {
   const { selectedElement, updateElement } = useAppStore();
 
   if (!selectedElement) return null;
@@ -12,21 +12,27 @@ export const Properties = () => {
         <label>Fill</label>
         <input 
           type="color" 
-          value={selectedElement.fill}
+          value={selectedElement.properties.fill || '#000000'}
           onChange={e => updateElement({ 
             ...selectedElement, 
-            fill: e.target.value 
+            properties: {
+              ...selectedElement.properties,
+              fill: e.target.value 
+            }
           })}
         />
       </div>
       <div className="property">
-        <label>Stroke</label>
+        <label>Stroke Width</label>
         <input 
           type="number" 
-          value={selectedElement.strokeWidth}
+          value={selectedElement.properties.strokeWidth || 1}
           onChange={e => updateElement({ 
             ...selectedElement, 
-            strokeWidth: Number(e.target.value) 
+            properties: {
+              ...selectedElement.properties,
+              strokeWidth: Number(e.target.value) 
+            }
           })}
         />
       </div>

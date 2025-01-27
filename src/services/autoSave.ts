@@ -1,10 +1,10 @@
-import { socketService } from "./SocketService";
+import SocketService from "./SocketService";
 import { CanvasState } from "../core/types";
 
 export const autoSave = (state: CanvasState) => {
-  socketService.socket.emit("save-state", {
-    timestamp: Date.now(),
+  SocketService.socket.emit("canvas-update", {
     state,
+    timestamp: Date.now(),
   });
 };
 

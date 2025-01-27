@@ -2,13 +2,6 @@ import { makeAutoObservable } from "mobx";
 import { Element, ElementType, Point } from "../core/types";
 import { createContext, useContext } from "react";
 
-interface ElementWithDimensions extends Element {
-  x: number;
-  y: number;
-  width: number;
-  height: number;
-}
-
 interface VisibleArea {
   top: number;
   right: number;
@@ -16,39 +9,61 @@ interface VisibleArea {
   left: number;
 }
 
+interface ZoomPoint {
+  x: number;
+  y: number;
+}
+
 class AppStore {
-  // Existing properties
   elements: Element[] = [];
+  selectedTool: ElementType | null = null;
   selectedElement: Element | null = null;
-  selectedElements: Element[] = [];
-  isDrawing: boolean = false;
-  zoom: number = 1;
+  activeElement: Element | null = null;
+  isDrawing = false;
+  zoom = 1;
   history: Element[][] = [[]];
   currentIndex: number = 0;
-  selectedTool: ElementType = ElementType.SELECT;
-  pan: Point = { x: 0, y: 0 };
-
-  // New properties
+  selectedElements: Element[] = [];
   selectedColor: string = "#000000";
   cursorPosition: Point = { x: 0, y: 0 };
   visibleArea: VisibleArea = { top: 0, right: 0, bottom: 0, left: 0 };
   snapLines: Array<{ points: number[] }> = [];
+  pan = { x: 0, y: 0 };
+  private lastTouchPosition: Point | null = null;
+  selectedId: string | null = null;
 
   constructor() {
     makeAutoObservable(this);
   }
 
-  // Tool and Selection Methods
-  setSelectedTool(tool: ElementType) {
+  setSelectedTool = (tool: ElementType) => {
     this.selectedTool = tool;
-  }
+  };
 
-  selectElement(id: string) {
-    const element = this.elements.find((el) => el.id === id);
-    if (element) {
-      this.setSelectedElement(element);
+  selectElement = (id: string) => {
+    this.selectedId = id;
+    this.selectedElement = this.elements.find(el => el.id === id) || null;
+  };
+
+  copySelected = () => {
+    if (this.selectedElement) {
+      const copy = {
+        ...this.selectedElement,
+        id: Date.now().toString(),
+        position: {
+          x: this.selectedElement.position.x + 10,
+          y: this.selectedElement.position.y + 10
+        }
+      };
+      this.elements.push(copy);
     }
-  }
+  };
+
+  paste = () => {
+    if (this.selectedElement) {
+      this.copySelected();
+    }
+  };
 
   // Color Methods
   setColor(color: string) {
@@ -60,8 +75,17 @@ class AppStore {
     this.pan = newPan;
   }
 
-  setZoom(value: number) {
-    this.zoom = Math.max(0.1, Math.min(4, value)); // Limit zoom range
+  setZoom(newZoom: number, point?: ZoomPoint) {
+    const oldZoom = this.zoom;
+    this.zoom = Math.min(Math.max(newZoom, 0.1), 5); // Clamp zoom between 0.1 and 5
+    
+    if (point) {
+      // Adjust pan to keep the point under cursor
+      const dx = point.x * (oldZoom - this.zoom);
+      const dy = point.y * (oldZoom - this.zoom);
+      this.pan.x += dx;
+      this.pan.y += dy;
+    }
   }
 
   // Element Management
@@ -101,11 +125,6 @@ class AppStore {
   }
 
   // Selection Management
-  setSelectedElement(element: Element | null) {
-    this.selectedElement = element;
-    this.selectedElements = element ? [element] : [];
-  }
-
   setSelectedElements(elements: Element[]) {
     this.selectedElements = elements;
     this.selectedElement = elements.length === 1 ? elements[0] : null;
@@ -155,6 +174,7 @@ class AppStore {
     if (e.touches.length === 2) {
       const touch1 = e.touches[0];
       const touch2 = e.touches[1];
+      // eslint-disable-next-line @typescript-eslint/no-unused-vars
       const dist = Math.hypot(
         touch1.clientX - touch2.clientX,
         touch1.clientY - touch2.clientY,
@@ -166,11 +186,79 @@ class AppStore {
   handlePan = (e: TouchEvent) => {
     if (e.touches.length === 1) {
       const touch = e.touches[0];
-      const newPan = {
-        x: this.pan.x + touch.clientX,
-        y: this.pan.y + touch.clientY,
+      
+      if (this.lastTouchPosition) {
+        // Calculate the delta between current and last touch position
+        const deltaX = touch.clientX - this.lastTouchPosition.x;
+        const deltaY = touch.clientY - this.lastTouchPosition.y;
+        
+        // Update pan by adding the delta to current pan
+        const newPan = {
+          x: this.pan.x + deltaX,
+          y: this.pan.y + deltaY,
+        };
+        this.setPan(newPan);
+      }
+
+      // Update last touch position
+      this.lastTouchPosition = { x: touch.clientX, y: touch.clientY };
+    } else {
+      // Reset last touch position when touch ends
+      this.lastTouchPosition = null;
+    }
+  };
+
+  handleMouseDown = (e: MouseEvent) => {
+    if (!this.selectedTool) return;
+    
+    this.isDrawing = true;
+    const point = {
+      x: (e.clientX - this.pan.x) / this.zoom,
+      y: (e.clientY - this.pan.y) / this.zoom
+    };
+
+    if (this.selectedTool === ElementType.SELECT) {
+      if (this.elements.length > 0) {
+        // Find element under cursor with proper zoom and pan calculations
+        const selectedElement = this.elements.find(element => {
+          const { x, y } = element.position;
+          const width = element.properties.width || 0;
+          const height = element.properties.height || 0;
+          
+          return point.x >= x && 
+                 point.x <= x + width &&
+                 point.y >= y && 
+                 point.y <= y + height;
+        });
+
+        this.selectedElements = selectedElement ? [selectedElement] : [];
+        this.selectedElement = selectedElement || null;
+      }
+    } else {
+      // Start drawing new element with proper zoom and pan calculations
+      const newElement: Element = {
+        id: Date.now().toString(),
+        type: this.selectedTool,
+        position: point,
+        properties: {
+          width: 0,
+          height: 0,
+          fill: this.selectedColor,
+          stroke: '#000000',
+          strokeWidth: 1
+        }
       };
-      this.setPan(newPan);
+      this.elements = [...this.elements, newElement];
+      this.activeElement = newElement;
+    }
+  };
+
+  handleMouseUp = (e: MouseEvent) => {
+    if (!this.isDrawing) return;
+    
+    this.isDrawing = false;
+    if (this.selectedTool !== ElementType.SELECT && this.activeElement) {
+      this.activeElement = null;
     }
   };
 
@@ -225,6 +313,29 @@ class AppStore {
         el.position.y < this.visibleArea.bottom &&
         el.position.y + (el.properties.height || 0) > this.visibleArea.top,
     );
+  }
+
+  deleteSelected = () => {
+    if (!this.selectedElement) return;
+    // Remove the selected element from elements array
+    this.elements = this.elements.filter(element => element.id !== this.selectedElement?.id);
+    
+    // Clear the selection
+    this.selectedElement = null;
+    // Add to history
+    this.updateHistory();
+  };
+
+  updateElements = (elements: Element[]) => {
+    this.elements = elements;
+    this.updateHistory();
+  };
+
+  jumpToState(index: number) {
+    if (index >= 0 && index < this.history.length) {
+      this.currentIndex = index;
+      this.elements = [...this.history[index]];
+    }
   }
 }
 

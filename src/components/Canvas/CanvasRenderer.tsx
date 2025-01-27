@@ -7,35 +7,57 @@ import { SelectionBox } from "../Selection/SelectionBox";
 import { GridLayer } from "../Grid/GridLayer";
 import { SnapGuides } from "../Guides/SnapGuides";
 
-export const Canvas: React.FC = observer(() => {
+interface CanvasProps {
+  width?: number;
+  height?: number;
+}
+
+export const Canvas: React.FC<CanvasProps> = observer(({ width = window.innerWidth, height = window.innerHeight }) => {
   const store = useAppStore();
 
-  const handleWheel = (e: any) => {
-    e.evt.preventDefault();
-    const scaleBy = 1.1;
-    const stage = e.target.getStage();
-    const oldScale = stage.scaleX();
-    const pointerPos = stage.getPointerPosition();
-
-    const newScale = e.evt.deltaY < 0 ? oldScale * scaleBy : oldScale / scaleBy;
-    store.setZoom(newScale);
-  };
-
   return (
-    <div className="canvas-container" data-testid="canvas">
+    <div className="canvas-container">
       <Stage
-        width={window.innerWidth}
-        height={window.innerHeight}
+        width={width}
+        height={height}
         scaleX={store.zoom}
         scaleY={store.zoom}
         x={store.pan.x}
         y={store.pan.y}
-        onWheel={handleWheel}
+        onMouseDown={(e) => {
+          // Prevent default selection behavior
+          e.evt.preventDefault();
+          const stage = e.target.getStage();
+          if (stage) {
+            const point = stage.getPointerPosition();
+            if (point) {
+              store.handleMouseDown({
+                clientX: point.x,
+                clientY: point.y,
+                preventDefault: () => {},
+              } as unknown as MouseEvent);
+            }
+          }
+        }}
+        onMouseMove={(e) => {
+          const stage = e.target.getStage();
+          if (stage) {
+            const point = stage.getPointerPosition();
+            if (point) {
+              store.handleMouseMove({
+                clientX: point.x,
+                clientY: point.y,
+                preventDefault: () => {},
+              } as unknown as MouseEvent);
+            }
+          }
+        }}
+        onMouseUp={() => store.handleMouseUp({} as MouseEvent)}
       >
-        <GridLayer />
         <Layer>
+          <GridLayer />
           <Elements />
-          <SelectionBox />
+          {store.selectedElement && <SelectionBox />}
           <SnapGuides />
         </Layer>
       </Stage>

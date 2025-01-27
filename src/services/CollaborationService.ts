@@ -1,30 +1,64 @@
 import { socket } from "../api/socket";
-import { User, Element } from "../core/types";
+import { User, Element, CanvasState, Point } from "../core/types";
+import ErrorService from "./errorService";
 
 interface CanvasUpdate {
   elements: Element[];
   action: string;
   userId: string;
+  timestamp: number;
 }
 
 class CollaborationService {
-  private roomId: string = ""; // Initialize with empty string
+  private users: Map<string, User> = new Map();
 
-  joinRoom(roomId: string, userData: User) {
-    this.roomId = roomId;
-    socket.emit("join-room", { roomId, userData });
+  constructor() {
+    this.setupSocketListeners();
   }
 
-  sendUpdate(update: CanvasUpdate) {
-    socket.emit("canvas-update", {
-      roomId: this.roomId,
-      update,
-      timestamp: Date.now(),
+  private setupSocketListeners() {
+    socket.on("user-joined", (user: User) => {
+      this.users.set(user.id, user);
+    });
+
+    socket.on("user-left", (userId: string) => {
+      this.users.delete(userId);
+    });
+
+    socket.on("cursor-update", (data: { userId: string; position: Point }) => {
+      const user = this.users.get(data.userId);
+      if (user) {
+        user.cursor = data.position;
+      }
     });
   }
 
-  onUpdate(callback: (update: CanvasUpdate) => void) {
+  updateCanvas(state: CanvasState) {
+    try {
+      socket.emit("canvas-update", {
+        elements: state.elements,
+        action: "update",
+        timestamp: Date.now()
+      });
+    } catch (error) {
+      ErrorService.logError(error as Error, "Failed to update canvas");
+    }
+  }
+
+  onCanvasUpdate(callback: (data: CanvasUpdate) => void) {
     socket.on("canvas-update", callback);
+  }
+
+  updateCursor(position: Point) {
+    try {
+      socket.emit("cursor-update", position);
+    } catch (error) {
+      ErrorService.logError(error as Error, "Failed to update cursor");
+    }
+  }
+
+  getActiveUsers(): User[] {
+    return Array.from(this.users.values());
   }
 }
 
